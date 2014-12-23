@@ -1,4 +1,6 @@
 compPLS
+=========
+
 An R package for [sparse] Partial least squares discriminant analysis and biplots for compositional data analysis.
 
 This package is the implementation for the method developed in Lee et al. (2014) [**1**] for the classification of independently-sampled microbial compositions based on Helminth-infection status of a people in Malaysia. Under an assumption of model sparsity (that is, relatively few microbial populations truly correlate with Helminth-status) we get a factor analysis as well as a classifier.
