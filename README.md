@@ -19,6 +19,33 @@ This development package requires the `devtools` package for installation. Addit
  install_github('zdk123/compPLS')
 ```
 
+Usage
+-----
+Some minimal examples for running 1) PLS 2) sparse PLS and biplots for the results.
+
+```
+ # a too low-dim example, for code demo purposes only
+ data(ArcticLake)
+ # clr transform the data along row margin (1)
+ ALake.clr <- clr(ArcticLake[,1:3], 1)
+ res <- plsDA(ALake.clr, grouping=ArcticLake[,4], K=2)
+ ggbiplot(res, grouping=ArcticLake[,4], group.ellipse=TRUE, label.loadings=TRUE, label.offset=.2, alpha=.6)
+ # alternative biplot
+ biplot(res)
+ 
+ ## a higher dim example
+ set.seed(1100)
+ data(Hydrochem)
+ Hchem.clr <- clr(Hydrochem[,6:19], 1)
+ # try without bootstrapping
+ res <- plsDA_main(Hchem.clr, grouping=Hydrochem$River, K=8:10, nboots=0) #, n.core=4) # if on multicore system
+ ggbiplot(res$plsda, grouping=Hydrochem$River, group.ellipse=TRUE, alpha=.5, plot.loadings=FALSE, label.loadings=TRUE)
+ optK <- res$plsda$ncomp
+ 
+ # do bootstrapping, warning: this can take a long time 
+  res <- plsDA_main(Hchem.clr, grouping=Hydrochem$River, K=optK, nboots=999) #, n.core=4) # if on multicore system
+```
+
 [**1**] http://www.plosntds.org/article/info%3Adoi%2F10.1371%2Fjournal.pntd.0002880
 
 [**2**] http://topepo.github.io/caret/index.html

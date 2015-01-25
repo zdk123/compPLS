@@ -23,10 +23,10 @@
 #' @seealso \code{\link{plsDA_main}}, \code{\link{caret::plsda}}
 #' @rdname plsDA
 #' @export
-plsDA <- function(data, grouping, K, usePriors=FALSE, ...) {
+plsDA <- function(x, grouping, K, usePriors=FALSE, plsfun=caret::plsda, ...) {
 # wrapper function for plsda
 
-    if (length(grouping) != nrow(data)) 
+    if (length(grouping) != nrow(x)) 
         stop('length of grouping vector does equal the number of samples')
 
     args <- list(...)
@@ -44,7 +44,7 @@ plsDA <- function(data, grouping, K, usePriors=FALSE, ...) {
     }
     args  <- c(args, ncomp=K)
     
-    do.call(caret::plsda, c(list(data, y), args))
+    do.call(plsfun, c(list(x, y), args))
 }
 
 
@@ -69,7 +69,8 @@ plsDA <- function(data, grouping, K, usePriors=FALSE, ...) {
 #' @export
 plsDA_main  <- function(x, grouping, K, usePriors=FALSE, fold=5, nboots=999, n.core=4, noise=0, ...) {
 
-    K   <- cv.plsDA.fit(x, grouping, eta=eta, K=K, noise=noise, fold=fold, usePriors, n.core=n.core)$K
+    if (length(K) > 1) 
+        K   <- cv.plsDA.fit(x, grouping, K=K, noise=noise, fold=fold, n.core=n.core, usePriors=usePriors)$K
     .bstat <- function(data, indices, ...)   plsDA(data[indices,,drop=FALSE], ...)$coefficients
     .pstat <- function(data, indices, ...)   plsDA(apply(data[indices,,drop=FALSE], 2, function(x) sample(x)), ...)$coefficients
 
@@ -133,10 +134,10 @@ pval.plsdaboot <- function(x, sided='both', mar=2) {
     pmat
 }
 
-cv.plsDA.fit <- function(x, grouping, eta, K, noise=0, fold=5, usePriors=FALSE, n.core) {
+cv.plsDA.fit <- function(x, grouping, K, noise=0, fold=5, n.core, ...) {
 # Find eta & k by cross validation
     x <- x + matrix(rnorm(prod(dim(x)), 0, noise), ncol=ncol(x))
-    capture.output(out <- .cv.plsDA(x, grouping, fold=fold, K=K, plot.it=FALSE, n.core=n.core))
+    capture.output(out <- .cv.plsDA(x, grouping, fold=fold, K=K, plot.it=FALSE, n.core=n.core, ...))
     out
 }
 
@@ -150,8 +151,8 @@ cv.plsDA.fit <- function(x, grouping, eta, K, noise=0, fold=5, usePriors=FALSE, 
     n <- nrow(x)
     p <- ncol(x)
     ip <- c(1:p)
-    y <- as.matrix(y)
-    q <- ncol(y)
+#    y <- as.matrix(y)
+    q <- length(y) #ncol(y)
 #    eta.K.pair <- cbind(rep(1, each = length(K)), rep(K, 1))
 #    eta.K.list <- split(eta.K.pair, c(1:nrow(eta.K.pair)))
     .fit.plsda <- function(K.val) {
@@ -160,18 +161,15 @@ cv.plsDA.fit <- function(x, grouping, eta, K, noise=0, fold=5, usePriors=FALSE, 
         for (k in 1:fold) {
             omit <- foldi[[k]]
             train.x <- x[-omit, ]
-            train.y <- y[-omit, ]
+            train.y <- y[-omit]
             test.x <- x[omit, ]
-            test.y <- y[omit, ]
-            plsda.fit <- plsDA(train.x, train.y, K = K.val, 
-                            scale.x = scale.x, classifier = classifier, ...)
-            pred <- as.numeric(predict(plsda.fit, 
-                newx = test.x))
+            test.y <- y[omit]
+            plsda.fit <- plsDA(train.x, train.y, K = K.val, ...)
+            pred <- predict(plsda.fit,  test.x)
             mspemati[k] <- mean(as.numeric(pred != test.y))
             Ai[k] <- mean(length(plsda.fit$A))
         }
         mspe.ij <- c(mean(mspemati), mean(Ai), 1, K.val)
-        print(mspe.ij)
         return(mspe.ij)
     }
     if (.Platform$OS.type == "unix") {

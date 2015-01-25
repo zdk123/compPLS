@@ -15,6 +15,7 @@ ggbiplot <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot princomp
+#' @export ggbiplot.princomp
 ggbiplot.princomp <- function(xobj, ...) {
     nobs.factor <- sqrt(xobj$n.obs)
     d <- xobj$sdev
@@ -25,6 +26,7 @@ ggbiplot.princomp <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot prcomp
+#' @export ggbiplot.prcomp
 ggbiplot.prcomp <- function(xobj, ...) {
     nobs.factor <- sqrt(nrow(xobj$x) - 1)
     d <- xobj$sdev
@@ -36,6 +38,7 @@ ggbiplot.prcomp <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot lda
+#' @export ggbiplot.lda
 ggbiplot.lda <- function(xobj, ...) {
     xname <- xobj$call$x
     gname <- xobj$call[[3L]]
@@ -53,25 +56,34 @@ ggbiplot.lda <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot plsda
-ggbiplot.plsda <- function(xobj, ...) {
-    nobs.factor <- sqrt(nrow(xobj$scores))
-    d     <- apply(xobj$scores, 2, sd)
-    means <- colMeans(xobj$scores)
-    scores <- scale(xobj$scores, center = means, scale = FALSE)
+#' @export ggbiplot.plsda
+ggbiplot.plsda <- function(xobj, Yplot=FALSE, ...) {
+    if (Yplot) {
+        scores <- xobj$Yscores
+        loadings <- xobj$Yloadings
+    } else {
+        scores <- xobj$scores
+        loadings <- xobj$loadings
+    }
+    nobs.factor <- sqrt(nrow(scores))
+    d     <- apply(scores, 2, sd)
+    means  <- colMeans(scores)
+    scores <- scale(scores, center = means, scale = FALSE)
     scores <- sweep(scores, 2, 6/(d * nobs.factor), FUN = '*')
-#    scores <- xobj$scores
-    ggbiplot.default(list(scores=scores, loadings=xobj$loadings), ...)
+    ggbiplot.default(list(scores=scores, loadings=loadings), ...)
 
 }
 
 
 #' @rdname ggbiplot
 #' @method ggbiplot splsda
+#' @export ggbiplot.splsda
 ggbiplot.splsda <- function(xobj, ...) {
 #    means <- irispls$meanx
 #    X <- scale(xobj$x, center = means, scale = FALSE)
     X <- xobj$x
-    xobj$scores <- as.matrix(X[,xobj$A]) %*% as.matrix(xobj$projection)
+    if (is.null(xobj$scores))
+      xobj$scores <- as.matrix(X[,xobj$A]) %*% as.matrix(xobj$projection)
     xobj$loadings <- xobj$projection
     ggbiplot.plsda(xobj, ...)
 }
@@ -79,6 +91,7 @@ ggbiplot.splsda <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot matrix
+#' @export ggbiplot.matrix
 ggbiplot.matrix <- function(xobj, ...) {
     scores   <- xobj
     loadings <- matrix(NA, nrow(xobj), ncol(xobj))
@@ -115,9 +128,10 @@ ggbiplot.matrix <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot default
+#' @export ggbiplot.default
 ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.prob = 0.69,
                      plot.loadings=TRUE, label.loadings=FALSE, label.offset=0, label.size=4.5,
-                     scale.loadings = 1, col.loadings=muted("red"), alpha = 1, col=grouping, 
+                     scale.loadings = 1, col.loadings=scales::muted("red"), alpha = 1, col=grouping, 
                      group.ellipse=FALSE, scale.ellipse = 1, group.cloud = FALSE, 
                      xlab="", ylab="", equalcoord=TRUE, size=3, size.loadings=1) {
     ## get scores and loadings from xobj
@@ -134,7 +148,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
          g <- g +
           geom_segment(data = loadings*scale.loadings,
                        aes(x = 0, y = 0, xend = xvar, yend = yvar),
-                       arrow = arrow(length = unit(1/2, 'picas')),
+                       arrow = grid::arrow(length = grid::unit(1/2, 'picas')),
                        color = col.loadings, size = size.loadings)
     }
     
@@ -207,7 +221,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
 
         theta <- c(seq(-pi, pi, length = 50), seq(pi, -pi, length = 50))
         circdat <- data.frame(xvar = r1 * cos(theta), yvar = r2 * sin(theta))
-        g <- g + geom_path(aes(x=xvar, y=yvar), data = circdat, color = muted('black'), 
+        g <- g + geom_path(aes(x=xvar, y=yvar), data = circdat, color = scales::muted('black'), 
                            size = 0.5, alpha = alpha/3)
     }
 

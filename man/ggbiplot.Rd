@@ -25,8 +25,9 @@ ggbiplot(xobj, ...)
 \method{ggbiplot}{matrix}(xobj, ...)
 
 \method{ggbiplot}{default}(xobj, grouping, select = 1:2, circle = FALSE,
-  circle.prob = 0.69, plotloadings = TRUE, scale.loadings = 1,
-  col.loadings = muted("red"), alpha = 1, col = grouping,
+  circle.prob = 0.69, plot.loadings = TRUE, label.loadings = FALSE,
+  label.offset = 0, label.size = 4.5, scale.loadings = 1,
+  col.loadings = scales::muted("red"), alpha = 1, col = grouping,
   group.ellipse = FALSE, scale.ellipse = 1, group.cloud = FALSE,
   xlab = "", ylab = "", equalcoord = TRUE, size = 3,
   size.loadings = 1)
@@ -42,7 +43,11 @@ ggbiplot(xobj, ...)
 
 \item{circle.prob}{controls circle diameter (scales data std dev) if \code{circle = TRUE}}
 
-\item{plotloadings}{should loading vectors be plotted}
+\item{plot.loadings}{should loading vectors be plotted}
+
+\item{label.loadings}{text of loadings labels, taken from rownames of loadings (depends on class of \code{xobj})}
+
+\item{label.offset}{absolute offset for loading labels, so labels don't cover loadings vectors}
 
 \item{scale.loadings}{scale length of loading vectors for plotting purposes}
 
@@ -77,6 +82,6 @@ additional plotting attributes (eg colors, themes, etc) can be chained on in the
 \examples{
 # an LDA example with iris data
 ldamod <- lda(iris[,1:4], grouping=iris[,5])
-ggbiplot(ldamod, grouping=iris[,5]) + theme_bw(q)
+ggbiplot(ldamod, grouping=iris[,5], alpha=.7, group.cloud=TRUE) + theme_bw()
 }
 

@@ -55,6 +55,7 @@ clr <- function(x, ...) {
 #' @param tol machine tolerance for a zero count, default is machine tol (.Machine$double.eps)
 #' @rdname clr
 #' @method clr default
+#' @export clr.default
 clr.default <- function(x, base=exp(1), tol=.Machine$double.eps) {
     nzero <- (x >= tol)
     LOG <- log(ifelse(nzero, x, 1), base)
@@ -66,6 +67,7 @@ clr.default <- function(x, base=exp(1), tol=.Machine$double.eps) {
 #' 
 #' @rdname clr
 #' @method clr matrix
+#' @export clr.matrix
 clr.matrix <- function(x, mar=2, base=exp(1), tol=.Machine$double.eps) {
 #    apply(x, mar, clr, ...)
     if (!mar %in% c(1,2)) stop('mar (margin) must be 1 (compositions are rows) or 2 (compositions are columns)')
@@ -85,6 +87,7 @@ clr.matrix <- function(x, mar=2, base=exp(1), tol=.Machine$double.eps) {
 #' 
 #' @rdname clr
 #' @method clr data.frame
+#' @export clr.data.frame
 clr.data.frame <- function(x, mar=2, ...) {
     clr(as.matrix(x), mar, ...)
 }
@@ -125,6 +128,7 @@ alr <- function(x, ...) {
 #' @param tol machine tolerance for a zero count, default is machine tol (.Machine$double.eps)
 #' @rdname alr
 #' @method alr default
+#' @export alr.default
 alr.default <- function(x, divcomp=1, base=exp(1), removeDivComp=TRUE,
                         tol=.Machine$double.eps) {
     zero <- (x >= tol)
@@ -138,6 +142,7 @@ alr.default <- function(x, divcomp=1, base=exp(1), removeDivComp=TRUE,
 #' 
 #' @rdname alr
 #' @method alr matrix
+#' @export alr.default
 alr.matrix <- function(x, mar=2, divcomp=1, base=exp(1), removeDivComp=TRUE,
                         tol=.Machine$double.eps) {
     if (mar == 1) x <- t(x)
@@ -154,6 +159,7 @@ alr.matrix <- function(x, mar=2, divcomp=1, base=exp(1), removeDivComp=TRUE,
 #' 
 #' @rdname alr
 #' @method alr data.frame
+#' @export alr.data.frame
 alr.data.frame <- function(x, mar=2, ...) {
     alr(as.matrix(x), mar, ...)
 }
