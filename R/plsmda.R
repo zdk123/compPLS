@@ -102,7 +102,6 @@ plsmda <- function (x, y, ncomp = 2, probMethod = "softmax", prior = NULL, ...) 
     mf <- match.call(expand.dots = FALSE)
     if (!missing(Y.add)) {
         Y.addname <- as.character(substitute(Y.add))
-        print(formula)
         mf$formula <- update(formula, paste("~ . +", Y.addname))
     }
     m <- match(c("formula", "data", "subset", "na.action"), names(mf), 
@@ -217,7 +216,6 @@ print.plsmda <- function(x, ...) {
 }
 
 
-
 predict.plsmda <- function (object, newdata = NULL, ncomp = NULL, type = "class",  ...)  {
     caret:::requireNamespaceQuietStop("pls")
     if (is.null(ncomp)) 
@@ -290,9 +288,6 @@ predict.plsmda <- function (object, newdata = NULL, ncomp = NULL, type = "class"
     names(out) <- names(object$obsLevels)
     out
 }
-
-
-
 
 
 .class2ind <- function(y) {

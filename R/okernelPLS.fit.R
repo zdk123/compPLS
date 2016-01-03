@@ -43,13 +43,13 @@ okernelpls.fit <- function(X, Y, ncomp, stripped=FALSE, scale=FALSE, center=TRUE
         Xtotvar <- sum(diag(K_x))
     }
     for (a in 1:ncomp) {
-        # generalized eigenvalue decomposition of feature and response kernels
+        # generalized eigenvalue decomposition of feature and response kernel
         out  <- .geigen(Amat, Bmat)
         vals <- out$values
         vecs <- out$vectors
-        val.max <- which.max(vals)
+        val.max <- which.max((vals))
         alpha   <- vecs[,val.max,drop=FALSE]
-        alpha <- alpha/ norm(matrix(alpha), 'F')
+##        alpha <- alpha/ norm(matrix(alpha), 'F')
         beta  <- K_y %*% alpha
         utmp  <- beta/c(crossprod(alpha, beta))
         wpw   <- sqrt(c(crossprod(utmp, K_x) %*% utmp))

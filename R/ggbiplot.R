@@ -130,30 +130,30 @@ ggbiplot.matrix <- function(xobj, ...) {
 #' @method ggbiplot default
 #' @export ggbiplot.default
 ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.prob = 0.69,
-                     plot.loadings=TRUE, label.loadings=FALSE, label.offset=0, label.size=4.5,
-                     scale.loadings = 1, col.loadings=scales::muted("red"), alpha = 1, col=grouping, 
-                     group.ellipse=FALSE, scale.ellipse = 1, group.cloud = FALSE, 
-                     xlab="", ylab="", equalcoord=TRUE, size=3, size.loadings=1) {
+                     plot.loadings=TRUE, label.loadings=FALSE, sub.loadings=1:nrow(xobj$loadings), 
+                     label.offset=0, label.size=4.5, scale.loadings = 1, col.loadings=scales::muted("red"), 
+                     alpha = 1, col=grouping, shape=NULL, group.ellipse=FALSE, scale.ellipse = 1, 
+                     group.cloud = FALSE, xlab="", ylab="", equalcoord=TRUE, size=3, size.loadings=1) {
     ## get scores and loadings from xobj
     if (length(select) > 2) stop("Error: only 2d plots supported")
     if (length(select) < 2) stop("Error: need at least 2 coordinates/components")
     scores   <- data.frame(xvar=xobj$scores[,select[1]], yvar=xobj$scores[,select[2]])
-    loadings <- data.frame(xvar=xobj$loadings[,select[1]], yvar=xobj$loadings[,select[2]])
-
+    loadings <- data.frame(xvar=xobj$loadings[sub.loadings,select[1]], yvar=xobj$loadings[sub.loadings,select[2]])
     # standardize scores (?)
     # Base plot
     g <- ggplot(data = scores, aes(x = xvar, y = yvar))
-    
+
     if (plot.loadings) {
-         g <- g +
-          geom_segment(data = loadings*scale.loadings,
-                       aes(x = 0, y = 0, xend = xvar, yend = yvar),
-                       arrow = grid::arrow(length = grid::unit(1/2, 'picas')),
-                       color = col.loadings, size = size.loadings)
+            g <- g +
+                 geom_segment(data = loadings*scale.loadings,
+                     aes(x = 0, y = 0, xend = xvar, yend = yvar),
+                     arrow = grid::arrow(length = grid::unit(1/2, 'picas')),
+                     size = size.loadings, color = col.loadings)
     }
-    
-    if (label.loadings) {
-        labs <- rownames(loadings)
+    if (is.character(label.loadings) || label.loadings) {
+        if (is.logical(label.loadings))
+            labs <- rownames(loadings)
+        else labs <- label.loadings
         # compute angles from orig.
         ang <- atan2(loadings$yvar*scale.loadings, loadings$xvar*scale.loadings)
         hyp <- sqrt((loadings$yvar*scale.loadings)^2 + (loadings$xvar*scale.loadings)^2)
@@ -164,21 +164,38 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
         g <- g +
            geom_text(aes(x=newx, y=newy, label=label), data=labdat, size=label.size)
     }
-    
+
     if (!missing(grouping)) {
         gind <- order(grouping)
         grouping <- grouping[gind]
         scores   <- scores[gind,]
-        g <- g + geom_point(data = data.frame(scores, grouping=grouping),
-                       aes(color = grouping), alpha = alpha, size=size) 
+
+        df <- data.frame(xvar=scores$xvar, yvar=scores$yvar, grouping=grouping)
+        if (!is.null(shape)) {
+            aesfun <- aes(color = grouping, shape=shape) ; df$shape <- shape[gind]
+        } else 
+            aesfun <- aes(color = grouping)
+
+        g <- g + geom_point(data = df,
+                       aesfun, alpha = alpha, size=size) 
 
     } else {
         if (!missing(col)) {
-            g <- g + geom_point(data=data.frame(scores, col), aes(color = col), 
-                                alpha = alpha, size=size)
+            df <- data.frame(xvar=scores$xvar, yvar=scores$yvar, col=col)
+            if (!is.null(shape)) {
+                aesfun <- aes(color = col, shape=shape) ; df$shape <- shape
+            } else 
+                aesfun <- aes(color = col)
+
+            g <- g + geom_point(data=df, 
+                                aesfun, alpha = alpha, size=size)
                      
         } else {
-        g <- g + geom_point(alpha = alpha, size=size)
+            if (!is.null(shape))
+                aesfun <- aes(shape=shape)
+            else
+                aesfun <- aes()
+        g <- g + geom_point(aesfun, alpha = alpha, size=size)
         }
     }
     
