@@ -13,11 +13,11 @@ License: GPL (>= 2)
 Suggests:
     testthat,
     boot,
-    ggplot2,
     grid,
     scales,
     kernlab,
     klaR
 Depends:
     caret,
+    ggplot2,
     MASS
