@@ -133,7 +133,8 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
                      plot.loadings=TRUE, label.loadings=FALSE, sub.loadings=1:nrow(xobj$loadings), 
                      label.offset=0, label.size=4.5, scale.loadings = 1, col.loadings=scales::muted("red"), 
                      alpha = 1, col=grouping, shape=NULL, group.ellipse=FALSE, scale.ellipse = 1, 
-                     group.cloud = FALSE, xlab="", ylab="", equalcoord=TRUE, size=3, size.loadings=1) {
+                     group.cloud = FALSE, xlab="", ylab="", equalcoord=TRUE, size=3, size.loadings=1,
+                     loadingsOnTop = FALSE) {
     ## get scores and loadings from xobj
     if (length(select) > 2) stop("Error: only 2d plots supported")
     if (length(select) < 2) stop("Error: need at least 2 coordinates/components")
@@ -144,11 +145,10 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
     g <- ggplot(data = scores, aes(x = xvar, y = yvar))
 
     if (plot.loadings) {
-            g <- g +
-                 geom_segment(data = loadings*scale.loadings,
-                     aes(x = 0, y = 0, xend = xvar, yend = yvar),
-                     arrow = grid::arrow(length = grid::unit(1/2, 'picas')),
-                     size = size.loadings, color = col.loadings)
+      loadingslayer <- geom_segment(data = loadings*scale.loadings,
+                        aes(x = 0, y = 0, xend = xvar, yend = yvar),
+                        arrow = grid::arrow(length = grid::unit(1/2, 'picas')),
+                        size = size.loadings, color = col.loadings)
     }
     if (is.character(label.loadings) || label.loadings) {
         if (is.logical(label.loadings))
@@ -176,8 +176,8 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
         } else 
             aesfun <- aes(color = grouping)
 
-        g <- g + geom_point(data = df,
-                       aesfun, alpha = alpha, size=size) 
+        scoreslayer <- geom_point(data = df,
+                          aesfun, alpha = alpha, size=size) 
 
     } else {
         if (!missing(col)) {
@@ -187,7 +187,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
             } else 
                 aesfun <- aes(color = col)
 
-            g <- g + geom_point(data=df, 
+            scoreslayer <- geom_point(data=df, 
                                 aesfun, alpha = alpha, size=size)
                      
         } else {
@@ -195,9 +195,11 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
                 aesfun <- aes(shape=shape)
             else
                 aesfun <- aes()
-        g <- g + geom_point(aesfun, alpha = alpha, size=size)
+        scoreslayer <- geom_point(aesfun, alpha = alpha, size=size)
         }
     }
+     if (!loadingsOnTop)  g <- g + loadingslayer + scoreslayer
+       else g <- g + scoreslayer + loadingslayer
     
     
     if (group.ellipse && !missing(grouping)) {
