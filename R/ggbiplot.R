@@ -15,7 +15,7 @@ ggbiplot <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot princomp
-#' @export ggbiplot.princomp
+#' @export
 ggbiplot.princomp <- function(xobj, ...) {
     nobs.factor <- sqrt(xobj$n.obs)
     d <- xobj$sdev
@@ -26,7 +26,7 @@ ggbiplot.princomp <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot prcomp
-#' @export ggbiplot.prcomp
+#' @export
 ggbiplot.prcomp <- function(xobj, ...) {
     nobs.factor <- sqrt(nrow(xobj$x) - 1)
     d <- xobj$sdev
@@ -38,7 +38,7 @@ ggbiplot.prcomp <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot lda
-#' @export ggbiplot.lda
+#' @export
 ggbiplot.lda <- function(xobj, ...) {
     xname <- xobj$call$x
     gname <- xobj$call[[3L]]
@@ -56,7 +56,7 @@ ggbiplot.lda <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot plsda
-#' @export ggbiplot.plsda
+#' @export
 ggbiplot.plsda <- function(xobj, Yplot=FALSE, ...) {
     if (Yplot) {
         scores <- xobj$Yscores
@@ -77,7 +77,7 @@ ggbiplot.plsda <- function(xobj, Yplot=FALSE, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot splsda
-#' @export ggbiplot.splsda
+#' @export
 ggbiplot.splsda <- function(xobj, ...) {
 #    means <- irispls$meanx
 #    X <- scale(xobj$x, center = means, scale = FALSE)
@@ -95,7 +95,7 @@ ggbiplot.splsda <- function(xobj, ...) {
 ggbiplot.matrix <- function(xobj, ...) {
     scores   <- xobj
     loadings <- matrix(NA, nrow(xobj), ncol(xobj))
-    ggbiplot.default(list(scores=scores, loadings=loadings), plot.loadings=FALSE, 
+    ggbiplot.default(list(scores=scores, loadings=loadings), plot.loadings=FALSE,
                           equalcoord=FALSE, ...)
 }
 
@@ -128,11 +128,12 @@ ggbiplot.matrix <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot default
-#' @export ggbiplot.default
+#' @importFrom ggplot2 ggplot geom_segment geom_point geom_text geom_path scale_x_continuous scale_y_continuous aes
+#' @export
 ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.prob = 0.69,
-                     plot.loadings=TRUE, label.loadings=FALSE, sub.loadings=1:nrow(xobj$loadings), 
-                     label.offset=0, label.size=4.5, scale.loadings = 1, col.loadings=scales::muted("red"), 
-                     alpha = 1, col=grouping, shape=NULL, group.ellipse=FALSE, scale.ellipse = 1, 
+                     plot.loadings=TRUE, label.loadings=FALSE, sub.loadings=1:nrow(xobj$loadings),
+                     label.offset=0, label.size=4.5, scale.loadings = 1, col.loadings=scales::muted("red"),
+                     alpha = 1, col=grouping, shape=NULL, group.ellipse=FALSE, scale.ellipse = 1,
                      group.cloud = FALSE, xlab="", ylab="", equalcoord=TRUE, size=3, size.loadings=1,
                      loadingsOnTop = FALSE) {
     ## get scores and loadings from xobj
@@ -157,7 +158,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
         # compute angles from orig.
         ang <- atan2(loadings$yvar*scale.loadings, loadings$xvar*scale.loadings)
         hyp <- sqrt((loadings$yvar*scale.loadings)^2 + (loadings$xvar*scale.loadings)^2)
-        
+
         labdat <- data.frame(newx=(hyp + label.offset)*cos(ang),
                              newy=(hyp + label.offset)*sin(ang),
                              label=labs)
@@ -173,23 +174,23 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
         df <- data.frame(xvar=scores$xvar, yvar=scores$yvar, grouping=grouping)
         if (!is.null(shape)) {
             aesfun <- aes(color = grouping, shape=shape) ; df$shape <- shape[gind]
-        } else 
+        } else
             aesfun <- aes(color = grouping)
 
         scoreslayer <- geom_point(data = df,
-                          aesfun, alpha = alpha, size=size) 
+                          aesfun, alpha = alpha, size=size)
 
     } else {
         if (!missing(col)) {
             df <- data.frame(xvar=scores$xvar, yvar=scores$yvar, col=col)
             if (!is.null(shape)) {
                 aesfun <- aes(color = col, shape=shape) ; df$shape <- shape
-            } else 
+            } else
                 aesfun <- aes(color = col)
 
-            scoreslayer <- geom_point(data=df, 
+            scoreslayer <- geom_point(data=df,
                                 aesfun, alpha = alpha, size=size)
-                     
+
         } else {
             if (!is.null(shape))
                 aesfun <- aes(shape=shape)
@@ -198,10 +199,13 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
         scoreslayer <- geom_point(aesfun, alpha = alpha, size=size)
         }
     }
-     if (!loadingsOnTop)  g <- g + loadingslayer + scoreslayer
-       else g <- g + scoreslayer + loadingslayer
-    
-    
+     if (plot.loadings) {
+       if (!loadingsOnTop)  g <- g + loadingslayer + scoreslayer
+         else g <- g + scoreslayer + loadingslayer
+     } else
+        g <- g + scoreslayer
+
+
     if (group.ellipse && !missing(grouping)) {
         l   <- 200
         group.scores  <- split(scores[,1:2], grouping)
@@ -209,7 +213,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
         group.cov     <- lapply(group.scores, cov)
         group.RR      <- lapply(group.cov, chol)
         angles   <- seq(0, 2*pi, length.out=l)
-        ell.list <- lapply(group.RR, function(RR) 
+        ell.list <- lapply(group.RR, function(RR)
                      scale.ellipse * cbind(cos(angles), sin(angles)) %*% RR)
         ellCntr  <- lapply(1:length(ell.list), function(i)
                         sweep(ell.list[[i]], 2, group.centers[[i]], "+"))
@@ -218,7 +222,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
         ell.df$grouping <- factor(rep(names(ellCntr), each=l), levels=names(ellCntr))
         g <- g + geom_path(data = ell.df, aes(color = grouping, group = grouping))
     }
-    
+
     if (group.cloud && !missing(grouping)) {
         group.scores  <- split(scores[,1:2], grouping)
         group.centers <- lapply(group.scores, colMeans)
@@ -232,7 +236,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
                        color = grouping), alpha=10^log(alpha/1.4))
     }
 
-    
+
     if (circle) {
     # scale circle radius
         r1 <- sqrt(qchisq(circle.prob, df = 2)) * max(scores$xvar^2)^(1/2)
@@ -240,7 +244,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
 
         theta <- c(seq(-pi, pi, length = 50), seq(pi, -pi, length = 50))
         circdat <- data.frame(xvar = r1 * cos(theta), yvar = r2 * sin(theta))
-        g <- g + geom_path(aes(x=xvar, y=yvar), data = circdat, color = scales::muted('black'), 
+        g <- g + geom_path(aes(x=xvar, y=yvar), data = circdat, color = scales::muted('black'),
                            size = 0.5, alpha = alpha/3)
     }
 
@@ -252,7 +256,7 @@ ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.
             xrange <- c(-max(abs(scores$xvar)), max(abs(scores$xvar)))
             yrange <- c(-max(abs(scores$yvar)), max(abs(scores$yvar)))
         }
-        
+
         g <- g + scale_x_continuous(xlab, limits=xrange) +
                  scale_y_continuous(ylab, limits=yrange)
     } else {

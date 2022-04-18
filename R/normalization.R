@@ -39,13 +39,13 @@ norm_to_total <- function(x) x/sum(x)
 #' # matrix examples:
 #' dmat <- matrix(exp(rnorm(110)), 10)
 # rows are samples/compositions, cols are features/components
-#' clr(dmat, 1) 
+#' clr(dmat, 1)
 # cols are samples/compositions, rows are features/components
-#' clr(dmat, 2) 
+#' clr(dmat, 2)
 #' @rdname clr
 #' @export
 clr <- function(x, ...) {
-    UseMethod('clr', x)
+    UseMethod('clr')
 }
 
 
@@ -55,7 +55,7 @@ clr <- function(x, ...) {
 #' @param tol machine tolerance for a zero count, default is machine tol (.Machine$double.eps)
 #' @rdname clr
 #' @method clr default
-#' @export clr.default
+#' @export
 clr.default <- function(x, base=exp(1), tol=.Machine$double.eps) {
     nzero <- (x >= tol)
     LOG <- log(ifelse(nzero, x, 1), base)
@@ -64,14 +64,14 @@ clr.default <- function(x, base=exp(1), tol=.Machine$double.eps) {
 
 
 #'
-#' 
+#'
 #' @rdname clr
 #' @method clr matrix
-#' @export clr.matrix
+#' @export
 clr.matrix <- function(x, mar=2, base=exp(1), tol=.Machine$double.eps) {
 #    apply(x, mar, clr, ...)
     if (!mar %in% c(1,2)) stop('mar (margin) must be 1 (compositions are rows) or 2 (compositions are columns)')
-    
+
     if (mar == 1) x <- t(x)
     nzero <- (x >= tol)
     LOG <- log(ifelse(nzero, x, 1), base)
@@ -84,10 +84,10 @@ clr.matrix <- function(x, mar=2, base=exp(1), tol=.Machine$double.eps) {
 
 
 #'
-#' 
+#'
 #' @rdname clr
 #' @method clr data.frame
-#' @export clr.data.frame
+#' @export
 clr.data.frame <- function(x, mar=2, ...) {
     clr(as.matrix(x), mar, ...)
 }
@@ -96,7 +96,7 @@ clr.data.frame <- function(x, mar=2, ...) {
 
 #' The additive log-ratio transformation for
 #' compositional data (not necessarily closed/normalized!)
-#' 
+#'
 #'  The alr transformation is computed as:
 #'  \code{x[i]} = log ( \code{x[i]} /  x[D] )
 #'
@@ -112,9 +112,9 @@ clr.data.frame <- function(x, mar=2, ...) {
 #' # matrix examples:
 #' dmat <- matrix(exp(rnorm(110)), 10)
 # rows are samples/compositions, cols are features/components
-#' alr(dmat, 1) 
+#' alr(dmat, 1)
 # cols are samples/compositions, rows are features/components
-#' alr(dmat, 2) 
+#' alr(dmat, 2)
 #' @rdname alr
 #' @export
 alr <- function(x, ...) {
@@ -139,7 +139,7 @@ alr.default <- function(x, divcomp=1, base=exp(1), removeDivComp=TRUE,
 }
 
 #'
-#' 
+#'
 #' @rdname alr
 #' @method alr matrix
 #' @export alr.default
@@ -156,7 +156,7 @@ alr.matrix <- function(x, mar=2, divcomp=1, base=exp(1), removeDivComp=TRUE,
 }
 
 #'
-#' 
+#'
 #' @rdname alr
 #' @method alr data.frame
 #' @export alr.data.frame
@@ -207,7 +207,7 @@ CSSstat <- function(mat, rel=0.1) {
     k     <- which(refS > 0)[1]
     lo    <- (length(refS) - k + 1)
     diffr <- sapply(1:ncols, function(i) {
-            refS[k:length(refS)] - quantile(yy[, i], p = seq(0, 
+            refS[k:length(refS)] - quantile(yy[, i], p = seq(0,
                 1, length.out = lo), na.rm = TRUE)})
     diffr2 <- apply(abs(diffr), 1, median, na.rm = TRUE)
     x <- which(abs(diff(diffr2))/diffr2[-1] > rel)[1]/length(diffr2)
@@ -235,6 +235,3 @@ DESeq.matrix <- function(mat, c) {
     smat <- matrix(rep(s,nrow(mat)), ncol=ncol(mat), byrow=TRUE)
     mat/smat
 }
-
-
-
