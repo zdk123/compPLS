@@ -128,6 +128,7 @@ ggbiplot.matrix <- function(xobj, ...) {
 
 #' @rdname ggbiplot
 #' @method ggbiplot default
+#' @importFrom ggplot2 ggplot geom_segment geom_point geom_text geom_path scale_x_continuous scale_y_continuous aes
 #' @export
 ggbiplot.default <- function(xobj, grouping, select=1:2, circle = FALSE, circle.prob = 0.69,
                      plot.loadings=TRUE, label.loadings=FALSE, sub.loadings=1:nrow(xobj$loadings),
